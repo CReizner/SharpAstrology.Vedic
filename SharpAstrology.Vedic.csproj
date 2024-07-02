@@ -6,8 +6,24 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageId>SharpAstrology.Vedic</PackageId>
+        <PackageTags>Astrology</PackageTags>
+        <Version>0.1.0</Version>
+        <Authors>Christian Reizner</Authors>
+        <IsPackable>true</IsPackable>
+        <Description>
+            This package provides enums and data types that are fundamental to Vedic astrological systems.
+            It extends the AstrologyChart class for Vedic astrology purposes.
+        </Description>
+        <RepositoryUrl>https://github.com/CReizner/SharpAstrology.Vedic</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/CReizner/SharpAstrology.Vedic</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    
     <ItemGroup>
-      <ProjectReference Include="..\SharpAstrology.Base\SharpAstrology.Base.csproj" />
+        <PackageReference Include="SharpAstrology.Base" Version="[0.10.0,)" />
     </ItemGroup>
 
 </Project>
