@@ -15,33 +15,6 @@
 | [SharpAstrology.West.BlazorComponents](https://github.com/CReizner/SharpAstrology.West.BlazorComponents)               | Western astrology charts as Blazor components          |   MIT    |
 | [SharpAstrology.WebApp](https://github.com/CReizner/SharpAstrology.WebApp)                                             | Blazor Server app built on the SharpAstrology packages | AGPL-3.0 |
 
-# Examples
-
-## Which house does a sign stand in?
-A rashi chart numbers its boxes from the box of the ascendant. The sign of the ascendant is the
-first house, the next sign the second one, and so on. `VedicAstrologyUtility.WholeSignHouseOf`
-does that counting.
-
-```csharp
-using SharpAstrology.Enums;
-using SharpAstrology.Utility;
-
-var lagna = Zodiac.Cancer;
-
-// Houses.House1
-var houseOfCancer = VedicAstrologyUtility.WholeSignHouseOf(Zodiac.Cancer, lagna);
-
-// Houses.House10, the count wraps around Aries
-var houseOfAries = VedicAstrologyUtility.WholeSignHouseOf(Zodiac.Aries, lagna);
-```
-
-The method takes signs and no longitudes. That is the point. A whole sign house is defined over
-sign boundaries, so counting sign indices is exact. Reading the same number from the house cusps
-of a chart is not, because a cusp calculated in the tropical zodiac is no boundary in the
-sidereal one.
-
-Both signs have to come from the same zodiac. If the chart was calculated tropically and is
-displayed sidereally, subtract the ayanamsa from both longitudes before taking their signs.
 
 ## Nakshatra and pada
 
@@ -62,3 +35,9 @@ var nakshatra = VedicAstrologyUtility.NakshatraOf(138.0278);
 var pada = VedicAstrologyUtility.PadaOf(138.0278);
 ```
 
+## Visualizing a chart
+
+SharpAstrology offers a package that allows you to visualize your AstrologyChart via a Blazor component. 
+See the project [SharpAstrology.Vedic.BlazorComponents](https://github.com/CReizner/SharpAstrology.Vedic.BlazorComponents).
+
+![Astro Chart](https://github.com/CReizner/SharpAstrology.Vedic.BlazorComponents/blob/main/.github_assets/vedic_chart.png)
