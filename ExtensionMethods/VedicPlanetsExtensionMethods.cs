@@ -14,7 +14,8 @@ public static class VedicPlanetsExtensionMethods
         Planets.NorthNode => Dashas.Rahu,
         Planets.Jupiter => Dashas.Jupiter,
         Planets.Saturn => Dashas.Saturn,
-        Planets.Mercury => Dashas.Mercury
+        Planets.Mercury => Dashas.Mercury,
+        _ => throw new NotSupportedException($"Planet {planet} has no dasha.")
     };
 
     public static (int, int) ToNaturalDasha(this Planets planet) => planet switch

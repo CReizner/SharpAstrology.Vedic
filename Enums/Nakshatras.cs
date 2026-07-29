@@ -60,6 +60,7 @@ public static class NakshatrasExtensionMethods
         Nakshatras.Shatabhisha => "Shatabhisha",
         Nakshatras.PurvaBhadrapada => "Purva Bhad.",
         Nakshatras.UttaraBhadrapada => "Uttara Bhad.",
-        Nakshatras.Revati => "Revati"
+        Nakshatras.Revati => "Revati",
+        _ => throw new ArgumentOutOfRangeException(nameof(nakshatra), nakshatra, null)
     };
 }

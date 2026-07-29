@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using SharpAstrology.DataModels;
 using SharpAstrology.Definitions;
 using SharpAstrology.Enums;
@@ -10,66 +9,112 @@ namespace SharpAstrology.ExtensionMethods;
 
 public static class VedicAstrologyChartExtensionMethods
 {
-    private const double NakshatraAngle = 13.333333;
-    private const double PadaAngle = NakshatraAngle / 4;
     private const double DaysPerYear = 365.242190;
+
+    #region Sidereal longitudes
+
+    // The sidereal longitude, without using the overload PositionOf(planet, true). Up to
+    // SharpAstrology.Base 0.12.0 that one subtracted the ayanamsa on the stored
+    // PlanetPosition and damaged the chart. Subtracting here keeps this library
+    // independent of the version of Base.
+    private static double SiderealLongitude(AstrologyChart chart, Planets planet)
+        => AstrologyUtility.SubtractDegree(chart.PositionOf(planet).Longitude, chart.Ayanamsa);
+
+    private static double SiderealLongitude(AstrologyChart chart, Houses house)
+    {
+        if (chart.HousePositions is null) throw new HousesNotAvailableException();
+        return AstrologyUtility.SubtractDegree(chart.HousePositions.HouseCusps[house], chart.Ayanamsa);
+    }
+
+    private static double SiderealLongitude(AstrologyChart chart, Cross direction)
+    {
+        if (chart.HousePositions is null) throw new HousesNotAvailableException();
+        return AstrologyUtility.SubtractDegree(chart.HousePositions.Cross[direction], chart.Ayanamsa);
+    }
+
+    #endregion
+
+    #region Nakshatra and pada
+
+    /// <summary>
+    /// The nakshatra of a planet, calculated in the sidereal zodiac of this chart.
+    /// Use <see cref="VedicAstrologyUtility.NakshatraOf(double)"/> to apply the
+    /// twenty-seven-fold division to a longitude of your own choice.
+    /// </summary>
+    /// <param name="chart">The chart to read the position from.</param>
+    /// <param name="planet">The planet to get the nakshatra of.</param>
     public static Nakshatras NakshatraOf(this AstrologyChart chart, Planets planet)
-    {
-        return VedicAstrologyUtility.NakshatraOf(chart.PositionOf(planet, true).Longitude);
-    }
+        => VedicAstrologyUtility.NakshatraOf(SiderealLongitude(chart, planet));
+
+    /// <summary>
+    /// The nakshatra of a house cusp, calculated in the sidereal zodiac of this chart.
+    /// </summary>
+    /// <param name="chart">The chart to read the cusp from.</param>
+    /// <param name="house">The house cusp to get the nakshatra of.</param>
+    /// <exception cref="HousesNotAvailableException">Thrown if the house positions are not available.</exception>
     public static Nakshatras NakshatraOf(this AstrologyChart chart, Houses house)
-    {
-        if (chart.HousePositions is null) throw new HousesNotAvailableException();
-        return VedicAstrologyUtility.NakshatraOf(chart.HousePositions.HouseCusps[house] - chart.Ayanamsa);
-    }
+        => VedicAstrologyUtility.NakshatraOf(SiderealLongitude(chart, house));
+
+    /// <summary>
+    /// The nakshatra of a direction of the cross, calculated in the sidereal zodiac of this chart.
+    /// </summary>
+    /// <param name="chart">The chart to read the direction from.</param>
+    /// <param name="direction">The direction of the cross (e.g., Ascendant, Midheaven).</param>
+    /// <exception cref="HousesNotAvailableException">Thrown if the house positions are not available.</exception>
     public static Nakshatras NakshatraOf(this AstrologyChart chart, Cross direction)
-    {
-        if (chart.HousePositions is null) throw new HousesNotAvailableException();
-        return VedicAstrologyUtility.NakshatraOf(chart.HousePositions.Cross[direction] - chart.Ayanamsa);
-    }
+        => VedicAstrologyUtility.NakshatraOf(SiderealLongitude(chart, direction));
 
+    /// <summary>
+    /// The pada of a planet, calculated in the sidereal zodiac of this chart.
+    /// Use <see cref="VedicAstrologyUtility.PadaOf(double)"/> to apply the division to a
+    /// longitude of your own choice.
+    /// </summary>
+    /// <param name="chart">The chart to read the position from.</param>
+    /// <param name="planet">The planet to get the pada of.</param>
     public static Padas PadaOf(this AstrologyChart chart, Planets planet)
-    {
-        return (chart.PositionOf(planet, true).Longitude % NakshatraAngle) switch
-        {
-            < PadaAngle => Padas.First,
-            < 2*PadaAngle and >= PadaAngle => Padas.Second,
-            < 3*PadaAngle and >= 2*PadaAngle => Padas.Third,
-            < 4*PadaAngle and >= 3*PadaAngle => Padas.Fourth
-        };
-    }
-    public static Padas PadaOf(this AstrologyChart chart, Houses house)
-    {
-        if (chart.HousePositions is null) throw new HousesNotAvailableException();
-        return ((chart.HousePositions.HouseCusps[house]-chart.Ayanamsa) % 13.333333) switch
-        {
-            < PadaAngle => Padas.First,
-            < 2*PadaAngle and >= PadaAngle => Padas.Second,
-            < 3*PadaAngle and >= 2*PadaAngle => Padas.Third,
-            < 4*PadaAngle and >= 3*PadaAngle => Padas.Fourth
-        };
-    }
-    public static Padas PadaOf(this AstrologyChart chart, Cross direction)
-    {
-        if (chart.HousePositions is null) throw new HousesNotAvailableException();
-        return ((chart.HousePositions.Cross[direction]-chart.Ayanamsa) % 13.333333) switch
-        {
-            < PadaAngle => Padas.First,
-            < 2*PadaAngle and >= PadaAngle => Padas.Second,
-            < 3*PadaAngle and >= 2*PadaAngle => Padas.Third,
-            < 4*PadaAngle and >= 3*PadaAngle => Padas.Fourth
-        };
-    }
+        => VedicAstrologyUtility.PadaOf(SiderealLongitude(chart, planet));
 
+    /// <summary>
+    /// The pada of a house cusp, calculated in the sidereal zodiac of this chart.
+    /// </summary>
+    /// <param name="chart">The chart to read the cusp from.</param>
+    /// <param name="house">The house cusp to get the pada of.</param>
+    /// <exception cref="HousesNotAvailableException">Thrown if the house positions are not available.</exception>
+    public static Padas PadaOf(this AstrologyChart chart, Houses house)
+        => VedicAstrologyUtility.PadaOf(SiderealLongitude(chart, house));
+
+    /// <summary>
+    /// The pada of a direction of the cross, calculated in the sidereal zodiac of this chart.
+    /// </summary>
+    /// <param name="chart">The chart to read the direction from.</param>
+    /// <param name="direction">The direction of the cross (e.g., Ascendant, Midheaven).</param>
+    /// <exception cref="HousesNotAvailableException">Thrown if the house positions are not available.</exception>
+    public static Padas PadaOf(this AstrologyChart chart, Cross direction)
+        => VedicAstrologyUtility.PadaOf(SiderealLongitude(chart, direction));
+
+    #endregion
+
+    #region Dashas
+
+    /// <summary>
+    /// The maha dasha that is active now. The chain covers 120 years from birth.
+    /// </summary>
+    /// <param name="chart">The chart to calculate the dashas of.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the current point in time lies outside the 120 years the chain covers.
+    /// </exception>
     public static Dashas CurrentMahaDasha(this AstrologyChart chart)
-    {
-        throw new NotImplementedException();
-    }
+        => chart.Dashas().CurrentDasha().Dasha;
 
     public static DashaCalculationResult Dashas(this AstrologyChart chart)
     {
-        var initialNakshatra = chart.NakshatraOf(Planets.Moon);
-        var periodPassed = (chart.PositionOf(Planets.Moon).Longitude % NakshatraAngle) / NakshatraAngle;
+        // The fraction of the nakshatra already passed comes from the same sidereal longitude
+        // as the nakshatra itself. This line used to read the longitude that the call to
+        // NakshatraOf had just shortened inside the chart, so a second call to Dashas() on the
+        // same chart returned a different chain.
+        var moon = SiderealLongitude(chart, Planets.Moon);
+        var initialNakshatra = VedicAstrologyUtility.NakshatraOf(moon);
+        var periodPassed = moon % VedicAstrologyUtility.NakshatraAngle / VedicAstrologyUtility.NakshatraAngle;
         var initialDasha = VedicAstrologyDefaults.DefaultNakshatraRulers[initialNakshatra].ToDasha();
         var periodStart = chart.PointInTime -
             TimeSpan.FromDays(DaysPerYear * VedicAstrologyDefaults.DashaPeriods[initialDasha] * periodPassed);
@@ -128,4 +173,6 @@ public static class VedicAstrologyChartExtensionMethods
 
         return result;
     }
+
+    #endregion
 }

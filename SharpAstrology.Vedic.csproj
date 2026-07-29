@@ -9,7 +9,7 @@
     <PropertyGroup>
         <PackageId>SharpAstrology.Vedic</PackageId>
         <PackageTags>Astrology</PackageTags>
-        <Version>0.1.0</Version>
+        <Version>0.3.0</Version>
         <Authors>Christian Reizner</Authors>
         <IsPackable>true</IsPackable>
         <Description>
@@ -21,9 +21,25 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="SharpAstrology.Base" Version="[0.10.0,)" />
+        <None Include="README.md" Pack="true" PackagePath="$(PackageReadmeFile)"/>
+    </ItemGroup>
+
+    <!-- The floor is only used in a clone of this repository alone, where the sibling project
+         is missing. Packing from the full working copy takes the version of the referenced
+         project instead, so the floor is kept at the version that project currently has.
+         Both ways then produce the same dependency. -->
+    <PropertyGroup>
+        <SharpAstrologyBaseVersion>[0.13.0,)</SharpAstrologyBaseVersion>
+    </PropertyGroup>
+
+    <ItemGroup Condition="Exists('..\SharpAstrology.Base\SharpAstrology.Base.csproj')">
+        <ProjectReference Include="..\SharpAstrology.Base\SharpAstrology.Base.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!Exists('..\SharpAstrology.Base\SharpAstrology.Base.csproj')">
+        <PackageReference Include="SharpAstrology.Base" Version="$(SharpAstrologyBaseVersion)" />
     </ItemGroup>
 
 </Project>
