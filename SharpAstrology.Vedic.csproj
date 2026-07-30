@@ -9,7 +9,8 @@
     <PropertyGroup>
         <PackageId>SharpAstrology.Vedic</PackageId>
         <PackageTags>Astrology</PackageTags>
-        <Version>0.3.0</Version>
+        <Version>0.4.0</Version>
+        <PackageReleaseNotes>0.4.0: Every method now reads the zodiac of the chart instead of subtracting the ayanamsa unconditionally. A chart built with EphCalculationMode.Sidereal already carries sidereal longitudes, and taking the ayanamsa off a second time moved NakshatraOf, PadaOf and above all Dashas by about 24 degrees. The signatures are unchanged and a tropical chart gives the same answers as before. The floor on SharpAstrology.Base moved to 0.14.0, which is the version that lets a chart report its zodiac.</PackageReleaseNotes>
         <Authors>Christian Reizner</Authors>
         <IsPackable>true</IsPackable>
         <Description>
@@ -26,12 +27,8 @@
         <None Include="README.md" Pack="true" PackagePath="$(PackageReadmeFile)"/>
     </ItemGroup>
 
-    <!-- The floor is only used in a clone of this repository alone, where the sibling project
-         is missing. Packing from the full working copy takes the version of the referenced
-         project instead, so the floor is kept at the version that project currently has.
-         Both ways then produce the same dependency. -->
     <PropertyGroup>
-        <SharpAstrologyBaseVersion>[0.13.0,)</SharpAstrologyBaseVersion>
+        <SharpAstrologyBaseVersion>[0.14.0,)</SharpAstrologyBaseVersion>
     </PropertyGroup>
 
     <ItemGroup Condition="Exists('..\SharpAstrology.Base\SharpAstrology.Base.csproj')">

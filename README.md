@@ -39,30 +39,34 @@ using SharpAstrology.ExtensionMethods;
 using SharpAstrology.Utility;
 
 // Moshier needs no ephemeris files, so this example runs as it stands. Lahiri is the
-// ayanamsa most Vedic astrologers use, and it is the number the extension methods subtract.
+// ayanamsa most Vedic astrologers use, and it decides where sidereal Aries begins.
 var service = new SwissEphemeridesService(ephType: EphType.Moshier);
 using var eph = service.CreateContext(Ayanamsas.Lahiri);
 
-// The chart is calculated tropically, which is the default. The sidereal zodiac comes
-// from the ayanamsa the chart carries, and the extension methods subtract it.
+// EphCalculationMode.Sidereal puts the whole chart into the sidereal zodiac, the planets,
+// the house cusps and the axes alike. That is the zodiac of Vedic astrology, so a rashi
+// chart is built this way. With HouseSystems.WholeSign the cusps then land exactly on the
+// boundaries of the constellations, which is what whole sign houses are defined over.
 var chart = new AstrologyChart(
     new DateTime(1988, 9, 4, 1, 15, 0, DateTimeKind.Utc), eph,
     latitude: 51.0, longitude: 11.0,
-    houseSystem: HouseSystems.WholeSign);
+    houseSystem: HouseSystems.WholeSign,
+    mode: EphCalculationMode.Sidereal);
 
 Console.WriteLine($"Ayanamsa: {chart.Ayanamsa.ToString("F4", CultureInfo.InvariantCulture)}");
 
-// Moon and lagna in the sidereal zodiac, with nakshatra and pada.
-Console.WriteLine($"Moon:  {chart.ConstellationOf(Planets.Moon)}, "
+// SignOf reads the divisions of the zodiac the chart stands in. Here those are the
+// constellations, because the chart was calculated sidereally. chart.CalculationMode says so.
+Console.WriteLine($"Moon:  {chart.SignOf(Planets.Moon)}, "
                   + $"{chart.NakshatraOf(Planets.Moon)} pada {(int)chart.PadaOf(Planets.Moon)}");
 
-var lagna = chart.ConstellationOf(Cross.Asc);
+var lagna = chart.SignOf(Cross.Asc);
 Console.WriteLine($"Lagna: {lagna}, {chart.NakshatraOf(Cross.Asc)} pada {(int)chart.PadaOf(Cross.Asc)}");
 
-// The whole sign houses of a rashi chart are counted from the sign of the lagna.
+// The whole sign houses of a rashi chart are counted from the constellation of the lagna.
 foreach (var planet in new[] { Planets.Sun, Planets.Moon, Planets.Mars })
 {
-    var sign = chart.ConstellationOf(planet);
+    var sign = chart.SignOf(planet);
     Console.WriteLine($"{planet,-6} {sign,-11} house {(int)VedicAstrologyUtility.WholeSignHouseOf(sign, lagna)}");
 }
 
@@ -85,6 +89,29 @@ Mars   Pisces      house 9
 Maha dasha:  Jupiter from 2010-11-08 to 2026-11-08
 Antar dasha: Rahu from 2024-06-14 to 2026-11-08
 ```
+
+## Which zodiac does the chart stand in?
+
+A chart stands in exactly one zodiac. It is chosen when the chart is built and it holds for the
+planets, the house cusps and the axes alike. `chart.CalculationMode` says which one it is,
+`EphCalculationMode.Tropic` for the signs and `EphCalculationMode.Sidereal` for the constellations.
+Whoever needs both zodiacs builds two charts.
+
+The methods of this package divide the longitudes the chart stores. They never shift them, so the
+zodiac of the chart is the zodiac of the answer. Build the chart with `EphCalculationMode.Sidereal`
+and `NakshatraOf`, `PadaOf` and `Dashas` give the nakshatras, padas and the vimshottari chain of
+Vedic astrology.
+
+A tropical chart is accepted as well and then divides the tropical zodiac into twenty-seven parts.
+That is a different answer, about two nakshatras away from the Vedic one, and nothing in this
+package corrects or refuses it. The dashas are the place where it costs the most, because the moon
+also fixes where the chain of a hundred and twenty years starts. Choosing the zodiac is the one
+decision this package leaves to you.
+
+Two more things follow the same rule. With `HouseSystems.WholeSign` a sidereal chart puts the cusps
+on the boundaries of the constellations, while a tropical chart puts them on the boundaries of the
+signs. And `SignOf` names constellations only on a sidereal chart, which is what a Vedic reading of
+the chart is about.
 
 A more accurate calculation needs the ephemeris files.
 [SharpAstrology.SwissEph](https://github.com/CReizner/SharpAstrology.SwissEph) describes which
